@@ -4,7 +4,7 @@
   "description": "Extendable and easy-to-use node cluster management.",
   "main": "index.js",
   "scripts": {
-    "test": "jshint index.js && lab -v -c test/*"
+    "test": "jshint index.js && NODE_ENV=test lab -v -c test/*"
   },
   "repository": {
     "type": "git",
@@ -21,14 +21,20 @@
     "url": "https://github.com/Runnable/cluster-man/issues"
   },
   "homepage": "https://github.com/Runnable/cluster-man",
+  "jshintConfig": {
+    "node": true,
+    "curly": true
+  },
   "devDependencies": {
     "code": "^1.4.0",
+    "jshint": "^2.6.3",
     "lab": "^5.5.1",
     "sinon": "^1.14.1"
   },
   "dependencies": {
     "101": "^0.14.1",
     "debug": "^2.1.3",
+    "loadenv": "^1.0.3",
     "map-utils": "^0.4.0"
   }
 }
