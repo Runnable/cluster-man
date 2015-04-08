@@ -48,6 +48,7 @@ module.exports = ClusterManager;
  * serverCluster.start();
  *
  * @author Ryan Sandor Richards.
+ * @class
  * @param {object|function} opts Options for the cluster or a worker function to
  *   execute on worker processes.
  * @param {cluster-man~Callback} opt.worker Function to execute on the worker

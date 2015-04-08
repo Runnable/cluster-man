@@ -4,7 +4,8 @@
   "description": "Extendable and easy-to-use node cluster management.",
   "main": "index.js",
   "scripts": {
-    "test": "jshint index.js && NODE_ENV=test lab -v -c test/*"
+    "test": "jshint index.js && NODE_ENV=test lab -v -c test/*",
+    "doc": "jsdoc index.js -d doc"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "code": "^1.4.0",
+    "jsdoc": "^3.3.0-beta3",
     "jshint": "^2.6.3",
     "lab": "^5.5.1",
     "sinon": "^1.14.1"
