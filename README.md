@@ -4,7 +4,7 @@ Extendable and easy-to-use node cluster management.
 
 ## Usage
 
-**Via Environment Configuration**/
+**Via Environment Configuration**
 ```js
 // Load your environment
 require('loadenv')();
