@@ -120,6 +120,21 @@ describe('cluster-man', function () {
         ClusterManager.prototype._addLogger.restore();
         done();
       });
+
+      it('should set `killOnError` to true by default', function (done) {
+        var manager = new ClusterManager(noop);
+        expect(manager.options.killOnError).to.be.true();
+        done();
+      });
+
+      it('should allow the user to set `killOnError` option', function (done) {
+        var manager = new ClusterManager({
+          worker: noop,
+          killOnError: false
+        });
+        expect(manager.options.killOnError).to.be.false();
+        done();
+      });
     }); // end 'constructor'
 
     describe('_addLogger', function () {

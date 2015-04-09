@@ -218,5 +218,17 @@ describe('cluster-man', function () {
       });
       manager._startMaster();
     });
+
+    it('should not exit the master process when `killOnError === false`', function (done) {
+      var manager = new ClusterManager({
+        worker: noop,
+        killOnError: false
+      });
+      sinon.stub(process, 'exit');
+      manager.masterError(new Error('Error'));
+      expect(process.exit.callCount).to.equal(0);
+      process.exit.restore();
+      done();
+    });
   }); // end 'masterError'
 }); // end 'cluster-man'

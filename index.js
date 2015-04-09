@@ -8,6 +8,7 @@ var domain = require('domain');
 var os = require('os');
 var isFunction = require('101/is-function');
 var noop = require('101/noop');
+var defaults = require('101/defaults');
 var pluck = require('map-utils').pluck;
 
 /**
@@ -21,14 +22,14 @@ module.exports = ClusterManager;
  * Utility class for creating new server clusters.
  *
  * @example
- * var ClusterMan = require('cluster-man');
+ * var ClusterManager = require('cluster-man');
  * var server = require('./lib/server');
  *
  * // Basic usage (if you only need to handle workers)
- * new ClusterMan(server.start).start();
+ * new ClusterManager(server.start).start();
  *
  * @example
- * var ClusterMan = require('cluster-man');
+ * var ClusterManager = require('cluster-man');
  * var server = require('./lib/server');
  *
  * // Create a new cluster manager using options, for handling master process
@@ -58,40 +59,38 @@ module.exports = ClusterManager;
  * @param {Number} opt.numWorkers Number of workers to spawn. Defaults to the
  *   value in `process.env.CLUSTER_WORKERS` if present, and if not then the
  *   number of CPUs as reported by `os.cpus().length`.
- * @param {String} opt.debug Scope Root scope for debug logging. Defaults to the
+ * @param {String} opt.debugScope Root scope for debug logging. Defaults to the
  *   value in `process.env.CLUSTER_DEBUG` if present, and if not then defaults
  *   to 'cluster-man'.
+ * @param {Boolean} opt.killOnError=true Whether or not to kill the master
+ *   process on and unhandled error.
  * @throws Error If a opt.worker was not specified or was not a function.
  */
 function ClusterManager(opts) {
   if (isFunction(opts)) {
     opts = { worker: opts };
   }
+  this.options = opts || {};
 
-  this.options = opts = opts || {};
+  var hasNumWorkers = !this.options.numWorkers && !process.env.CLUSTER_WORKERS;
 
-  if (!opts.debugScope) {
-    opts.debugScope = process.env.CLUSTER_DEBUG || 'cluster-man';
-  }
+  defaults(this.options, {
+    debugScope: process.env.CLUSTER_DEBUG || 'cluster-man',
+    master: noop,
+    numWorkers: process.env.CLUSTER_WORKERS || os.cpus().length,
+    killOnError: true
+  });
 
-  this._addLogger('info', [opts.debugScope, 'info'].join(':'));
-  this._addLogger('warning', [opts.debugScope, 'warning'].join(':'));
-  this._addLogger('error', [opts.debugScope, 'error'].join(':'));
+  this._addLogger('info', [this.options.debugScope, 'info'].join(':'));
+  this._addLogger('warning', [this.options.debugScope, 'warning'].join(':'));
+  this._addLogger('error', [this.options.debugScope, 'error'].join(':'));
 
-  if (!opts.master || !isFunction(opts.master)) {
-    this.log.warning('Cluster not provided with a master closure.');
-    opts.master = noop;
-  }
-
-  if (!opts.worker || !isFunction(opts.worker)) {
+  if (!this.options.worker || !isFunction(this.options.worker)) {
     throw new Error('Cluster must be provided with a worker closure.');
   }
 
-  if (!opts.numWorkers) {
-    if (!process.env.CLUSTER_WORKERS) {
-      this.log.warning('Number of workers not specified, using default.');
-    }
-    opts.numWorkers = process.env.CLUSTER_WORKERS || os.cpus().length;
+  if (!hasNumWorkers) {
+    this.log.warning('Number of workers not specified, using default.');
   }
 
   this.workers = [];
@@ -259,8 +258,8 @@ ClusterManager.prototype.disconnect = function (worker) {
  */
 ClusterManager.prototype.masterError = function(err) {
   this.log.error('Unhandled master error: ' + err.stack);
-
-  // TODO Should we really kill the process here by default?
-  this.log.error('Cluster fatal: unhandled error in master process, exiting.');
-  process.exit(1);
+  if (this.options.killOnError) {
+    this.log.error('Cluster fatal: unhandled error in master process, exiting.');
+    process.exit(1);
+  }
 };
