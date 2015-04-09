@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jshint index.js && NODE_ENV=test lab -v -c test/*",
-    "doc": "jsdoc index.js -d doc"
+    "doc": "jsdoc index.js -d doc; open -a 'Google Chrome' doc/index.html"
   },
   "repository": {
     "type": "git",
