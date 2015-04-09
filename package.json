@@ -4,8 +4,8 @@
   "description": "Extendable and easy-to-use node cluster management.",
   "main": "index.js",
   "scripts": {
-    "test": "jshint index.js && NODE_ENV=test lab -v -c test/*",
-    "doc": "jsdoc index.js -d doc"
+    "test": "./node_modules/.bin/jshint index.js && NODE_ENV=test lab -v -c test/*",
+    "doc": "./node_modules/.bin/jsdoc index.js -d doc; open -a 'Google Chrome' doc/index.html"
   },
   "repository": {
     "type": "git",
