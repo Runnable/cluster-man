@@ -35,12 +35,6 @@ describe('cluster-man', function () {
         return { id: ++workerId };
       });
       infoSpy = sinon.spy(manager.log, 'info');
-
-      // We are adding quite a few listeners over and over again
-      // since we instantiate and start the cluster manager throughout
-      // the tests. This will get rid of the "omg memory leak" warning.
-      manager.cluster.setMaxListeners(5000);
-
       manager._startMaster();
       done();
     });
@@ -48,6 +42,7 @@ describe('cluster-man', function () {
     afterEach(function (done) {
       manager.cluster.fork.restore();
       manager.log.info.restore();
+      manager.cluster.removeAllListeners();
       done();
     });
 
