@@ -1,5 +1,11 @@
 # cluster-man
 
+![Build Status](https://travis-ci.org/Runnable/cluster-man.svg?branch=master)
+![Dependency Status](https://david-dm.org/Runnable/cluster-man.svg)
+![devDependency Status](https://david-dm.org/Runnable/cluster-man/dev-status.svg)
+
+[![NPM](https://nodei.co/npm/cluster-man.png?compact=true)](https://nodei.co/npm/cluster-man)
+
 Extendable and easy-to-use node cluster management.
 
 ## Basic Usage
