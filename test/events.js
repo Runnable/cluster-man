@@ -59,7 +59,7 @@ describe('cluster-man', function () {
       it('should indicate a worker fork in the logs', function (done) {
         var worker = manager.workers[0];
         manager.cluster.emit('fork', worker);
-        expect(infoSpy.calledWith('Worker forked: ' + worker.id));
+        expect(infoSpy.calledWith('Worker forked: ' + worker.id)).to.be.true();
         done();
       });
     }); // end 'fork'

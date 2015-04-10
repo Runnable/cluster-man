@@ -71,7 +71,7 @@ manager.start();
 
 ## API Documentation
 
-Coming Soon!
+For the full API documentation, please visit http://runnable.github.io/cluster-man/
 
 ## Extending ClusterManager
 
