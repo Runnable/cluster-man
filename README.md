@@ -62,7 +62,12 @@ var manager = new ClusterManager({
 
   // Tell it not to kill the master process on an un-handled error
   // (sometimes useful, not recommended)
-  killOnError: false
+  killOnError: false,
+
+  // Perform some action before the master process exits due to an error
+  beforeExit: function() {
+    // ...
+  }
 });
 
 // Start the cluster!
@@ -83,6 +88,7 @@ application.
 To aid such specialized behaviors the `ClusterManager` class was designed to be
 extendable via prototypal inheritance. Furthermore, instances expose the node
 `cluster` directly so additional eventing can easily be added.
+
 
 **Example: Adding additional cluster event listeners**
 ```js
