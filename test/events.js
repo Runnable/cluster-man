@@ -124,6 +124,29 @@ describe('cluster-man', function () {
         });
         done();
       });
+
+      it('should exit the master process if all workers exit', function (done) {
+        var stub = sinon.stub(manager, '_exitMaster');
+        var log = sinon.spy(manager.log, 'error');
+
+        // Need to indirectly iterate over the workers, since `manager.workers`
+        // is modified by the 'exit' event handler
+        manager.workers.map(function (worker) {
+          return worker;
+        }).forEach(function (worker) {
+          manager.cluster.emit('exit', worker, 1, 'SIGINT');
+        });
+
+        expect(stub.calledOnce)
+          .to.be.true();
+        expect(stub.calledWithMatch({ message: 'All workers have died.' }))
+          .to.be.true();
+        expect(log.calledWithMatch('Cluster fatal'))
+          .to.be.true();
+
+        manager._exitMaster.restore();
+        done();
+      });
     }); // end 'exit'
 
     describe('online', function () {
@@ -205,10 +228,9 @@ describe('cluster-man', function () {
       manager._startMaster();
     });
 
-    it('should exit the master process on unlocked errors', function (done) {
-      sinon.stub(process, 'exit', function (code) {
-        expect(code).to.equal(1);
-        process.exit.restore();
+    it('should exit the master process on uncaught errors', function (done) {
+      var stub = sinon.stub(manager, '_exitMaster', function (err) {
+        expect(err).to.equal(errorObject);
         done();
       });
       manager._startMaster();
@@ -219,10 +241,9 @@ describe('cluster-man', function () {
         worker: noop,
         killOnError: false
       });
-      sinon.stub(process, 'exit');
+      var stub = sinon.stub(manager, '_exitMaster');
       manager.masterError(new Error('Error'));
-      expect(process.exit.callCount).to.equal(0);
-      process.exit.restore();
+      expect(stub.callCount).to.equal(0);
       done();
     });
   }); // end 'masterError'

@@ -135,6 +135,15 @@ describe('cluster-man', function () {
         expect(manager.options.killOnError).to.be.false();
         done();
       });
+
+      it('should not allow non-function beforeExit option', function(done) {
+        var manager = new ClusterManager({
+          worker: noop,
+          beforeExit: 'not a function'
+        });
+        expect(manager.options.beforeExit).to.equal(noop);
+        done();
+      });
     }); // end 'constructor'
 
     describe('_addLogger', function () {
@@ -227,6 +236,49 @@ describe('cluster-man', function () {
         done();
       });
     }); // end '_startMaster'
+
+    describe('_exitMaster', function() {
+      beforeEach(function (done) {
+        sinon.stub(process, 'exit');
+        done();
+      });
+
+      afterEach(function (done) {
+        process.exit.restore();
+        done();
+      });
+
+      it('should execute the `beforeExit` callback', function(done) {
+        var manager = new ClusterManager({
+          worker: noop,
+          beforeExit: function(err, done) {
+            done();
+          }
+        });
+        var spy = sinon.spy(manager.options, 'beforeExit');
+        var err = new Error('Error');
+        manager._exitMaster(err);
+        expect(spy.calledOnce).to.be.true();
+        expect(spy.calledWith(err)).to.be.true();
+        done();
+      });
+
+      it('should exit the process with code 1 when given an error', function(done) {
+        var manager = new ClusterManager(noop);
+        manager._exitMaster(new Error('error'));
+        expect(process.exit.calledOnce).to.be.true();
+        expect(process.exit.calledWith(1)).to.be.true();
+        done();
+      });
+
+      it('should exit the process with code 0 when not given an error', function (done) {
+        var manager = new ClusterManager(noop);
+        manager._exitMaster();
+        expect(process.exit.calledOnce).to.be.true();
+        expect(process.exit.calledWith(0)).to.be.true();
+        done();
+      });
+    }); // end '_exitMaster'
 
     describe('_startWorker', function () {
       it('should call the worker callback', function (done) {

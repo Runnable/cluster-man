@@ -64,6 +64,8 @@ module.exports = ClusterManager;
  *   to 'cluster-man'.
  * @param {Boolean} opt.killOnError=true Whether or not to kill the master
  *   process on and unhandled error.
+ * @param {cluster-man~BeforeExit} beforeExit Callback to execute before the
+ *   master process exits in response to an error.
  * @throws Error If a opt.worker was not specified or was not a function.
  */
 function ClusterManager(opts) {
@@ -78,7 +80,10 @@ function ClusterManager(opts) {
     debugScope: process.env.CLUSTER_DEBUG || 'cluster-man',
     master: noop,
     numWorkers: process.env.CLUSTER_WORKERS || os.cpus().length,
-    killOnError: true
+    killOnError: true,
+    beforeExit: function (err, done) {
+      done();
+    }
   });
 
   this._addLogger('info', [this.options.debugScope, 'info'].join(':'));
@@ -93,12 +98,25 @@ function ClusterManager(opts) {
     this.log.warning('Number of workers not specified, using default.');
   }
 
+  if (!isFunction(this.options.beforeExit)) {
+    this.log.warning('Before exit callback is not a function, removing.');
+    this.options.beforeExit = noop;
+  }
+
   this.workers = [];
 
   // This is here to expose the cluster without having to re-require in the
   // script that uses cluster-man
   this.cluster = cluster;
 }
+
+/**
+ * Callback for performing tasks before the master process is killed.
+ * @callback cluster-man~BeforeExit
+ * @param {Error} [err] Error that caused the cluster to be shut down.
+ * @param {function} done Execute this method when you are done performing
+ *   tasks.
+ */
 
 /**
  * Starts either a cluster master or a worker depending on the process type at
@@ -157,6 +175,16 @@ ClusterManager.prototype._startMaster = function() {
   // Execute master callback from options
   masterDomain.run(function () {
     self.options.master(this);
+  });
+};
+
+/**
+ * Runs before exit callback and exits the master process.
+ * @param {Error} [err] Error that caused the master process to exit.
+ */
+ClusterManager.prototype._exitMaster = function (err) {
+  this.options.beforeExit(err, function () {
+    process.exit(err ? 1 : 0);
   });
 };
 
@@ -230,6 +258,12 @@ ClusterManager.prototype.exit = function (worker, code, signal) {
       self.workers.splice(i, 1);
     }
   });
+
+  // If all the workers have been killed, exit the process
+  if (this.workers.length === 0) {
+    this.log.error('Cluster fatal: all worker have died. Master process exiting.');
+    this._exitMaster(new Error('All workers have died.'));
+  }
 };
 
 /**
@@ -260,6 +294,6 @@ ClusterManager.prototype.masterError = function(err) {
   this.log.error('Unhandled master error: ' + err.stack);
   if (this.options.killOnError) {
     this.log.error('Cluster fatal: unhandled error in master process, exiting.');
-    process.exit(1);
+    this._exitMaster(err);
   }
 };
