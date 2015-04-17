@@ -77,6 +77,8 @@
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -105,6 +107,10 @@
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Options for the cluster or a worker function to
   execute on worker processes.</td>
@@ -128,6 +134,10 @@
 
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last">Function to execute on the worker
@@ -153,6 +163,10 @@
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Function to execute on the master
   process.</td>
@@ -177,6 +191,10 @@
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Number of workers to spawn. Defaults to the
   value in `process.env.CLUSTER_WORKERS` if present, and if not then the
@@ -187,7 +205,7 @@
 
         <tr>
             
-                <td class="name"><code>opt.debug</code></td>
+                <td class="name"><code>opt.debugScope</code></td>
             
 
             <td class="type">
@@ -202,10 +220,72 @@
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last">Scope Root scope for debug logging. Defaults to the
+            <td class="description last">Root scope for debug logging. Defaults to the
   value in `process.env.CLUSTER_DEBUG` if present, and if not then defaults
   to 'cluster-man'.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>opt.killOnError</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Whether or not to kill the master
+  process on and unhandled error.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>opt.beforeExit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="cluster-man.html#~BeforeExit">cluster-man~BeforeExit</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Callback to execute before the
+  master process exits in response to an error.</td>
         </tr>
 
     
@@ -253,7 +333,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line66">line 66</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line71">line 71</a>
     </li></ul></dd>
     
 
@@ -292,13 +372,13 @@
 
     <h5>Examples</h5>
     
-    <pre class="prettyprint"><code>var ClusterMan = require('cluster-man');
+    <pre class="prettyprint"><code>var ClusterManager = require('cluster-man');
 var server = require('./lib/server');
 
 // Basic usage (if you only need to handle workers)
-new ClusterMan(server.start).start();</code></pre>
+new ClusterManager(server.start).start();</code></pre>
 
-    <pre class="prettyprint"><code>var ClusterMan = require('cluster-man');
+    <pre class="prettyprint"><code>var ClusterManager = require('cluster-man');
 var server = require('./lib/server');
 
 // Create a new cluster manager using options, for handling master process
@@ -465,7 +545,150 @@ serverCluster.start();</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line122">line 122</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line139">line 139</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="_exitMaster"><span class="type-signature"></span>_exitMaster<span class="signature">(err<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Runs before exit callback and exits the master process.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>err</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Error</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Error that caused the master process to exit.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line185">line 185</a>
     </li></ul></dd>
     
 
@@ -550,7 +773,7 @@ process callback (as specified in the constructor).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line135">line 135</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line152">line 152</a>
     </li></ul></dd>
     
 
@@ -632,7 +855,7 @@ process callback (as specified in the constructor).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line167">line 167</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line194">line 194</a>
     </li></ul></dd>
     
 
@@ -715,7 +938,7 @@ handler for the worker, and returns it.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line176">line 176</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line203">line 203</a>
     </li></ul></dd>
     
 
@@ -869,7 +1092,7 @@ disconnected from communication but is not nessessarily dead.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line250">line 250</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line283">line 283</a>
     </li></ul></dd>
     
 
@@ -1046,7 +1269,7 @@ disconnected from communication but is not nessessarily dead.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line221">line 221</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line248">line 248</a>
     </li></ul></dd>
     
 
@@ -1178,7 +1401,7 @@ off the master cluster.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line198">line 198</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line225">line 225</a>
     </li></ul></dd>
     
 
@@ -1328,7 +1551,7 @@ worker is listening.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line208">line 208</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line235">line 235</a>
     </li></ul></dd>
     
 
@@ -1461,7 +1684,7 @@ kill the process with a status code `1`.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line260">line 260</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line293">line 293</a>
     </li></ul></dd>
     
 
@@ -1593,7 +1816,7 @@ process has successfully spawned a process and is running.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line241">line 241</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line274">line 274</a>
     </li></ul></dd>
     
 
@@ -1676,7 +1899,7 @@ the time of invocation.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line108">line 108</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line125">line 125</a>
     </li></ul></dd>
     
 
@@ -1724,7 +1947,7 @@ the time of invocation.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Wed Apr 08 2015 16:39:55 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Fri Apr 17 2015 13:08:57 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>
