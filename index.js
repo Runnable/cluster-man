@@ -64,7 +64,7 @@ module.exports = ClusterManager;
  *   to 'cluster-man'.
  * @param {Boolean} opt.killOnError=true Whether or not to kill the master
  *   process on and unhandled error.
- * @param {cluster-man~BeforeExit} beforeExit Callback to execute before the
+ * @param {cluster-man~BeforeExit} opt.beforeExit Callback to execute before the
  *   master process exits in response to an error.
  * @throws Error If a opt.worker was not specified or was not a function.
  */
