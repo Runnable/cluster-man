@@ -64,8 +64,8 @@ module.exports = ClusterManager;
  *   to 'cluster-man'.
  * @param {Boolean} opt.killOnError=true Whether or not to kill the master
  *   process on and unhandled error.
- * @param {function} beforeExit Callback to execute before the master process
- *   exits in response to an error.
+ * @param {cluster-man~BeforeExit} beforeExit Callback to execute before the
+ *   master process exits in response to an error.
  * @throws Error If a opt.worker was not specified or was not a function.
  */
 function ClusterManager(opts) {
@@ -81,7 +81,9 @@ function ClusterManager(opts) {
     master: noop,
     numWorkers: process.env.CLUSTER_WORKERS || os.cpus().length,
     killOnError: true,
-    beforeExit: noop
+    beforeExit: function (err, done) {
+      done();
+    }
   });
 
   this._addLogger('info', [this.options.debugScope, 'info'].join(':'));
@@ -107,6 +109,14 @@ function ClusterManager(opts) {
   // script that uses cluster-man
   this.cluster = cluster;
 }
+
+/**
+ * Callback for performing tasks before the master process is killed.
+ * @callback cluster-man~BeforeExit
+ * @param {Error} [err] Error that caused the cluster to be shut down.
+ * @param {function} done Execute this method when you are done performing
+ *   tasks.
+ */
 
 /**
  * Starts either a cluster master or a worker depending on the process type at
@@ -173,8 +183,9 @@ ClusterManager.prototype._startMaster = function() {
  * @param {Error} [err] Error that caused the master process to exit.
  */
 ClusterManager.prototype._exitMaster = function (err) {
-  this.options.beforeExit(err);
-  process.exit(err ? 1 : 0);
+  this.options.beforeExit(err, function () {
+    process.exit(err ? 1 : 0);
+  });
 };
 
 /**

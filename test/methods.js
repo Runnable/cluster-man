@@ -251,8 +251,8 @@ describe('cluster-man', function () {
       it('should execute the `beforeExit` callback', function(done) {
         var manager = new ClusterManager({
           worker: noop,
-          beforeExit: function() {
-            return 'beforeExit';
+          beforeExit: function(err, done) {
+            done();
           }
         });
         var spy = sinon.spy(manager.options, 'beforeExit');

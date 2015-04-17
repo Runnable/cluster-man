@@ -65,8 +65,11 @@ var manager = new ClusterManager({
   killOnError: false,
 
   // Perform some action before the master process exits due to an error
-  beforeExit: function() {
-    // ...
+  beforeExit: function(err, done) {
+    // Do what you need to before the process is killed...
+
+    // Then call the `done` function
+    done();
   }
 });
 
