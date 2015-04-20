@@ -235,6 +235,27 @@ describe('cluster-man', function () {
         manager.options.master.restore();
         done();
       });
+
+      it('should not log a warning if number of workers specified', function (done) {
+        var spy = sinon.spy(manager.log, 'warning');
+        manager._startMaster();
+        expect(spy.calledWith('Number of workers not specified, using default.'))
+          .to.be.false();
+        done();
+      });
+
+      it('should log a warning if not given a number of workers', function (done) {
+        var envClusterWorkers = process.env.CLUSTER_WORKERS;
+        delete process.env.CLUSTER_WORKERS;
+        var manager = new ClusterManager(noop);
+        sinon.stub(manager, 'createWorker');
+        var spy = sinon.spy(manager.log, 'warning');
+        manager._startMaster();
+        expect(spy.calledWith('Number of workers not specified, using default.'))
+          .to.be.true();
+        process.env.CLUSTER_WORKERS = envClusterWorkers;
+        done();
+      });
     }); // end '_startMaster'
 
     describe('_exitMaster', function() {

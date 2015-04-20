@@ -8,6 +8,7 @@ var domain = require('domain');
 var os = require('os');
 var isFunction = require('101/is-function');
 var noop = require('101/noop');
+var exists = require('101/exists');
 var defaults = require('101/defaults');
 var pluck = require('map-utils').pluck;
 
@@ -74,7 +75,9 @@ function ClusterManager(opts) {
   }
   this.options = opts || {};
 
-  var hasNumWorkers = !this.options.numWorkers && !process.env.CLUSTER_WORKERS;
+  this.givenNumWorkers =
+    exists(this.options.numWorkers) ||
+    exists(process.env.CLUSTER_WORKERS);
 
   defaults(this.options, {
     debugScope: process.env.CLUSTER_DEBUG || 'cluster-man',
@@ -92,10 +95,6 @@ function ClusterManager(opts) {
 
   if (!this.options.worker || !isFunction(this.options.worker)) {
     throw new Error('Cluster must be provided with a worker closure.');
-  }
-
-  if (!hasNumWorkers) {
-    this.log.warning('Number of workers not specified, using default.');
   }
 
   if (!isFunction(this.options.beforeExit)) {
@@ -151,6 +150,11 @@ ClusterManager.prototype._addLogger = function (name, label) {
  */
 ClusterManager.prototype._startMaster = function() {
   var self = this;
+
+  if (!this.givenNumWorkers) {
+
+    this.log.warning('Number of workers not specified, using default.');
+  }
 
   // Setup master process domain error handling
   var masterDomain = domain.create();
