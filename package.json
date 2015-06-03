@@ -1,6 +1,6 @@
 {
   "name": "cluster-man",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Extendable and easy-to-use node cluster management.",
   "main": "index.js",
   "scripts": {
