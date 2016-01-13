@@ -10,7 +10,7 @@ var isFunction = require('101/is-function');
 var noop = require('101/noop');
 var exists = require('101/exists');
 var defaults = require('101/defaults');
-var pluck = require('map-utils').pluck;
+var pluck = require('101/pluck');
 
 /**
  * Extendable and easy-to-use node cluster management.
