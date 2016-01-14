@@ -1,37 +1,37 @@
-'use strict';
+'use strict'
 
-require('loadenv')('cluster-man');
+require('loadenv')('cluster-man')
 
-var cluster = require('cluster');
-var debug = require('debug');
-var domain = require('domain');
-var os = require('os');
-var isFunction = require('101/is-function');
-var noop = require('101/noop');
-var exists = require('101/exists');
-var defaults = require('101/defaults');
-var pluck = require('101/pluck');
+var cluster = require('cluster')
+var debug = require('debug')
+var domain = require('domain')
+var os = require('os')
+var isFunction = require('101/is-function')
+var noop = require('101/noop')
+var exists = require('101/exists')
+var defaults = require('101/defaults')
+var pluck = require('101/pluck')
 
 /**
  * Extendable and easy-to-use node cluster management.
  * @module cluster-man
  * @author Ryan Sandor Richards, Anandkumar Patel
  */
-module.exports = ClusterManager;
+module.exports = ClusterManager
 
 /**
  * Utility class for creating new server clusters.
  *
  * @example
- * var ClusterManager = require('cluster-man');
- * var server = require('./lib/server');
+ * var ClusterManager = require('cluster-man')
+ * var server = require('./lib/server')
  *
  * // Basic usage (if you only need to handle workers)
- * new ClusterManager(server.start).start();
+ * new ClusterManager(server.start).start()
  *
  * @example
- * var ClusterManager = require('cluster-man');
- * var server = require('./lib/server');
+ * var ClusterManager = require('cluster-man')
+ * var server = require('./lib/server')
  *
  * // Create a new cluster manager using options, for handling master process
  * // and worker processes with a specific number of workers.
@@ -39,7 +39,7 @@ module.exports = ClusterManager;
  *   worker: server.start,
  *   master: masterStart,
  *   numWorkers: 4
- * });
+ * })
  *
  * function masterStart(clusterManager) {
  *   // Any additional things you'd like to do after the cluster
@@ -47,7 +47,7 @@ module.exports = ClusterManager;
  * }
  *
  * // Start the cluster
- * serverCluster.start();
+ * serverCluster.start()
  *
  * @author Ryan Sandor Richards.
  * @class
@@ -69,44 +69,44 @@ module.exports = ClusterManager;
  *   master process exits in response to an error.
  * @throws Error If a opt.worker was not specified or was not a function.
  */
-function ClusterManager(opts) {
+function ClusterManager (opts) {
   if (isFunction(opts)) {
-    opts = { worker: opts };
+    opts = { worker: opts }
   }
-  this.options = opts || {};
+  this.options = opts || {}
 
   this.givenNumWorkers =
     exists(this.options.numWorkers) ||
-    exists(process.env.CLUSTER_WORKERS);
+    exists(process.env.CLUSTER_WORKERS)
 
   defaults(this.options, {
     debugScope: process.env.CLUSTER_DEBUG || 'cluster-man',
     master: noop,
     numWorkers: process.env.CLUSTER_WORKERS || os.cpus().length,
     killOnError: true,
-    beforeExit: function (err, done) {
-      done();
+    beforeExit: function (err, done) { // eslint-disable-line handle-callback-err
+      done()
     }
-  });
+  })
 
-  this._addLogger('info', [this.options.debugScope, 'info'].join(':'));
-  this._addLogger('warning', [this.options.debugScope, 'warning'].join(':'));
-  this._addLogger('error', [this.options.debugScope, 'error'].join(':'));
+  this._addLogger('info', [this.options.debugScope, 'info'].join(':'))
+  this._addLogger('warning', [this.options.debugScope, 'warning'].join(':'))
+  this._addLogger('error', [this.options.debugScope, 'error'].join(':'))
 
   if (!this.options.worker || !isFunction(this.options.worker)) {
-    throw new Error('Cluster must be provided with a worker closure.');
+    throw new Error('Cluster must be provided with a worker closure.')
   }
 
   if (!isFunction(this.options.beforeExit)) {
-    this.log.warning('Before exit callback is not a function, removing.');
-    this.options.beforeExit = noop;
+    this.log.warning('Before exit callback is not a function, removing.')
+    this.options.beforeExit = noop
   }
 
-  this.workers = [];
+  this.workers = []
 
   // This is here to expose the cluster without having to re-require in the
   // script that uses cluster-man
-  this.cluster = cluster;
+  this.cluster = cluster
 }
 
 /**
@@ -123,12 +123,11 @@ function ClusterManager(opts) {
  */
 ClusterManager.prototype.start = function () {
   if (this.cluster.isMaster) {
-    this._startMaster();
+    this._startMaster()
+  } else {
+    this._startWorker()
   }
-  else {
-    this._startWorker();
-  }
-};
+}
 
 /**
  * Adds a logger debug method to the manager.
@@ -137,10 +136,10 @@ ClusterManager.prototype.start = function () {
  */
 ClusterManager.prototype._addLogger = function (name, label) {
   if (!this.log) {
-    this.log = {};
+    this.log = {}
   }
-  this.log[name] = debug(label);
-};
+  this.log[name] = debug(label)
+}
 
 /**
  * Starts a cluster master. Specifically this will bind worker events to
@@ -148,39 +147,38 @@ ClusterManager.prototype._addLogger = function (name, label) {
  * domain to catch unhandled errors on the master process and execute the master
  * process callback (as specified in the constructor).
  */
-ClusterManager.prototype._startMaster = function() {
-  var self = this;
+ClusterManager.prototype._startMaster = function () {
+  var self = this
 
   if (!this.givenNumWorkers) {
-
-    this.log.warning('Number of workers not specified, using default.');
+    this.log.warning('Number of workers not specified, using default.')
   }
 
   // Setup master process domain error handling
-  var masterDomain = domain.create();
-  masterDomain.on('error', function() {
-    self.masterError.apply(self, arguments);
-  });
-  masterDomain.add(this);
+  var masterDomain = domain.create()
+  masterDomain.on('error', function () {
+    self.masterError.apply(self, arguments)
+  })
+  masterDomain.add(this)
 
   // Bind cluster events to this object.
-  var eventNames = ['fork', 'listening', 'exit', 'online', 'disconnect'];
+  var eventNames = ['fork', 'listening', 'exit', 'online', 'disconnect']
   eventNames.forEach(function (eventName) {
-    self.cluster.on(eventName, function() {
-      self[eventName].apply(self, arguments);
-    });
-  });
+    self.cluster.on(eventName, function () {
+      self[eventName].apply(self, arguments)
+    })
+  })
 
   // Spawn workers
   for (var i = 0; i < this.options.numWorkers; i++) {
-    this.createWorker();
+    this.createWorker()
   }
 
   // Execute master callback from options
   masterDomain.run(function () {
-    self.options.master(this);
-  });
-};
+    self.options.master(this)
+  })
+}
 
 /**
  * Runs before exit callback and exits the master process.
@@ -188,16 +186,16 @@ ClusterManager.prototype._startMaster = function() {
  */
 ClusterManager.prototype._exitMaster = function (err) {
   this.options.beforeExit(err, function () {
-    process.exit(err ? 1 : 0);
-  });
-};
+    process.exit(err ? 1 : 0)
+  })
+}
 
 /**
  * Starts a cluster worker. Simply executes the provided worker callback.
  */
-ClusterManager.prototype._startWorker = function() {
-  this.options.worker(this);
-};
+ClusterManager.prototype._startWorker = function () {
+  this.options.worker(this)
+}
 
 /**
  * Creates a new worker. Specifically it forks a new worker, sets a domain error
@@ -205,21 +203,21 @@ ClusterManager.prototype._startWorker = function() {
  * @return {cluster~Worker} Newly created worker.
  */
 ClusterManager.prototype.createWorker = function () {
-  var self = this;
-  var worker = this.cluster.fork();
+  var self = this
+  var worker = this.cluster.fork()
 
   // Deals with unhandled worker errors
-  var workerDomain = domain.create();
-  workerDomain.add(worker);
+  var workerDomain = domain.create()
+  workerDomain.add(worker)
   workerDomain.on('error', function (err) {
-    self.log.error('Unhandled worker error: ' + err.stack);
-    worker.process.kill(1);
-  });
+    self.log.error('Unhandled worker error: ' + err.stack)
+    worker.process.kill(1)
+  })
 
-  this.workers.push(worker);
-  this.log.info('Created new worker: ' + worker.id);
-  return worker;
-};
+  this.workers.push(worker)
+  this.log.info('Created new worker: ' + worker.id)
+  return worker
+}
 
 /**
  * Handles worker `fork` events. This event is emitted when a worker is forked
@@ -227,8 +225,8 @@ ClusterManager.prototype.createWorker = function () {
  * @param {cluster~Worker} Worker that was forked.
  */
 ClusterManager.prototype.fork = function (worker) {
-  this.log.info('Worker forked: ' + worker.id);
-};
+  this.log.info('Worker forked: ' + worker.id)
+}
 
 /**
  * Handles worker `listening` events. Indicates to the master that a particular
@@ -239,9 +237,9 @@ ClusterManager.prototype.fork = function (worker) {
 ClusterManager.prototype.listening = function (worker, address) {
   this.log.info([
     'Worker listening:', worker.id,
-    'on address', (address.address+':'+address.port)
-  ].join(' '));
-};
+    'on address', (address.address + ':' + address.port)
+  ].join(' '))
+}
 
 /**
  * Handles worker `exit` events.
@@ -254,21 +252,21 @@ ClusterManager.prototype.exit = function (worker, code, signal) {
     'Worker exited:', worker.id,
     '-- with status:', code,
     '-- and signal:', signal
-  ].join(' '));
+  ].join(' '))
 
-  var self = this;
+  var self = this
   this.workers.map(pluck('id')).some(function (workerId, i) {
     if (workerId === worker.id) {
-      self.workers.splice(i, 1);
+      self.workers.splice(i, 1)
     }
-  });
+  })
 
   // If all the workers have been killed, exit the process
   if (this.workers.length === 0) {
-    this.log.error('Cluster fatal: all worker have died. Master process exiting.');
-    this._exitMaster(new Error('All workers have died.'));
+    this.log.error('Cluster fatal: all worker have died. Master process exiting.')
+    this._exitMaster(new Error('All workers have died.'))
   }
-};
+}
 
 /**
  * Handles worker `online` events. This indicates to the cluster that a worker
@@ -276,8 +274,8 @@ ClusterManager.prototype.exit = function (worker, code, signal) {
  * @param {cluster~Worker} worker Worker that came online.
  */
 ClusterManager.prototype.online = function (worker) {
-  this.log.info('Worker online: ' + worker.id);
-};
+  this.log.info('Worker online: ' + worker.id)
+}
 
 /**
  * Handles worker `disconnect` events. This indicates that the worker has
@@ -285,8 +283,8 @@ ClusterManager.prototype.online = function (worker) {
  * @param {cluster~Worker} worker Worker that disconnected.
  */
 ClusterManager.prototype.disconnect = function (worker) {
-  this.log.info('Worker disconnected: ' + worker.id + ' -- killing');
-};
+  this.log.info('Worker disconnected: ' + worker.id + ' -- killing')
+}
 
 /**
  * Called when master process domain encounters an unhandled error. By default
@@ -294,10 +292,10 @@ ClusterManager.prototype.disconnect = function (worker) {
  * kill the process with a status code `1`.
  * @param {Error} err Unhandled error on the master process.
  */
-ClusterManager.prototype.masterError = function(err) {
-  this.log.error('Unhandled master error: ' + err.stack);
+ClusterManager.prototype.masterError = function (err) {
+  this.log.error('Unhandled master error: ' + err.stack)
   if (this.options.killOnError) {
-    this.log.error('Cluster fatal: unhandled error in master process, exiting.');
-    this._exitMaster(err);
+    this.log.error('Cluster fatal: unhandled error in master process, exiting.')
+    this._exitMaster(err)
   }
-};
+}
