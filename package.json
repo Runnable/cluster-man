@@ -6,7 +6,7 @@
   "scripts": {
     "format": "standard --format --verbose",
     "lint": "standard --verbose",
-    "test": "npm run lint && NODE_ENV=test lab -v -t 100 test/*",
+    "test": "npm run lint && NODE_ENV=test mocha",
     "doc": "jsdoc index.js -d doc; open -a 'Google Chrome' doc/index.html"
   },
   "repository": {
@@ -24,10 +24,20 @@
     "url": "https://github.com/Runnable/cluster-man/issues"
   },
   "homepage": "https://github.com/Runnable/cluster-man",
+  "standard": {
+    "globals": [
+      "describe",
+      "it",
+      "before",
+      "after",
+      "beforeEach",
+      "afterEach"
+    ]
+  },
   "devDependencies": {
-    "code": "^1.4.0",
+    "chai": "^3.4.1",
     "jsdoc": "^3.3.0-beta3",
-    "lab": "^5.5.1",
+    "mocha": "^2.3.4",
     "sinon": "^1.14.1",
     "standard": "^5.4.1"
   },
