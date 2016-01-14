@@ -176,7 +176,10 @@ ClusterManager.prototype._startMaster = function () {
 
   // Execute master callback from options
   masterDomain.run(function () {
-    self.options.master(this)
+    // To support any sync throws, wrap in `process.nextTick`.
+    process.nextTick(function () {
+      self.options.master(this)
+    }.bind(this))
   })
 }
 
