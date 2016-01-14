@@ -1,15 +1,8 @@
 'use strict'
 
-var Lab = require('lab')
-var lab = exports.lab = Lab.script()
-var describe = lab.describe
-var it = lab.it
-var beforeEach = lab.beforeEach
-var afterEach = lab.afterEach
-var Code = require('code')
-var expect = Code.expect
-var sinon = require('sinon')
+var assert = require('chai').assert
 var noop = require('101/noop')
+var sinon = require('sinon')
 
 require('loadenv')('cluster-man')
 var ClusterManager = require('../index.js')
@@ -20,7 +13,7 @@ describe('cluster-man', function () {
     var infoSpy
     var numWorkers = 4
 
-    beforeEach(function (done) {
+    beforeEach(function () {
       manager = new ClusterManager({
         worker: noop,
         numWorkers: numWorkers
@@ -31,70 +24,63 @@ describe('cluster-man', function () {
       })
       infoSpy = sinon.spy(manager.log, 'info')
       manager._startMaster()
-      done()
     })
 
-    afterEach(function (done) {
+    afterEach(function () {
       manager.cluster.fork.restore()
       manager.log.info.restore()
       manager.cluster.removeAllListeners()
-      done()
     })
 
     describe('fork', function () {
-      it('should call `fork` when a worker is forked', function (done) {
+      it('should call `fork` when a worker is forked', function () {
         var worker = manager.workers[0]
         var spy = sinon.spy(manager, 'fork')
         manager.cluster.emit('fork', worker)
-        expect(spy.calledWith(worker)).to.be.true()
+        sinon.assert.calledWith(spy, worker)
         manager.fork.restore()
-        done()
       })
 
-      it('should indicate a worker fork in the logs', function (done) {
+      it('should indicate a worker fork in the logs', function () {
         var worker = manager.workers[0]
         manager.cluster.emit('fork', worker)
-        expect(infoSpy.calledWith('Worker forked: ' + worker.id)).to.be.true()
-        done()
+        sinon.assert.calledWith(infoSpy, 'Worker forked: ' + worker.id)
       })
     }) // end 'fork'
 
     describe('listening', function () {
-      it('should call `listening` when a worker is listening', function (done) {
+      it('should call `listening` when a worker is listening', function () {
         var worker = manager.workers[0]
         var address = { address: '0.0.0.0', port: '9000' }
         var spy = sinon.spy(manager, 'listening')
         manager.cluster.emit('listening', worker, address)
-        expect(spy.calledWith(worker, address)).to.be.true()
+        sinon.assert.calledWith(spy, worker, address)
         manager.listening.restore()
-        done()
       })
 
-      it('should indicate a worker is listening in the logs', function (done) {
+      it('should indicate a worker is listening in the logs', function () {
         var worker = manager.workers[0]
         var address = { address: '0.0.0.0', port: '9000' }
         var logLine = 'Worker listening: ' + worker.id +
           ' on address ' + address.address + ':' + address.port
 
         manager.cluster.emit('listening', worker, address)
-        expect(infoSpy.calledWith(logLine)).to.be.true()
-        done()
+        sinon.assert.calledWith(infoSpy, logLine)
       })
     }) // end 'listening'
 
     describe('exit', function () {
-      it('should call `exit` when a worker exits', function (done) {
+      it('should call `exit` when a worker exits', function () {
         var worker = manager.workers[0]
         var code = 1
         var signal = 'SIGBUS'
         var spy = sinon.spy(manager, 'exit')
         manager.cluster.emit('exit', worker, code, signal)
-        expect(spy.calledWith(worker, code, signal)).to.be.true()
+        sinon.assert.calledWith(spy, worker, code, signal)
         manager.exit.restore()
-        done()
       })
 
-      it('should indicate a worker exit in the logs', function (done) {
+      it('should indicate a worker exit in the logs', function () {
         var worker = manager.workers[0]
         var code = 0
         var signal = 'SIGINT'
@@ -103,23 +89,21 @@ describe('cluster-man', function () {
           ' -- and signal: ' + signal
 
         manager.cluster.emit('exit', worker, code, signal)
-        expect(infoSpy.calledWith(logLine)).to.be.true()
-        done()
+        sinon.assert.calledWith(infoSpy, logLine)
       })
 
-      it('should remove a worker that exits', function (done) {
+      it('should remove a worker that exits', function () {
         var worker = manager.workers[0]
         var code = 0
         var signal = 'SIGINT'
         manager.cluster.emit('exit', worker, code, signal)
-        expect(manager.workers.length).to.equal(numWorkers - 1)
+        assert.equal(manager.workers.length, numWorkers - 1)
         manager.workers.forEach(function (w) {
-          expect(w.id).to.not.equal(worker.id)
+          assert.notEqual(w.id, worker.id)
         })
-        done()
       })
 
-      it('should exit the master process if all workers exit', function (done) {
+      it('should exit the master process if all workers exit', function () {
         var stub = sinon.stub(manager, '_exitMaster')
         var log = sinon.spy(manager.log, 'error')
 
@@ -131,52 +115,44 @@ describe('cluster-man', function () {
           manager.cluster.emit('exit', worker, 1, 'SIGINT')
         })
 
-        expect(stub.calledOnce)
-          .to.be.true()
-        expect(stub.calledWithMatch({ message: 'All workers have died.' }))
-          .to.be.true()
-        expect(log.calledWithMatch('Cluster fatal'))
-          .to.be.true()
+        sinon.assert.calledOnce(stub)
+        sinon.assert.calledWithMatch(stub, { message: 'All workers have died.' })
+        sinon.assert.calledWithMatch(log, 'Cluster fatal')
 
         manager._exitMaster.restore()
-        done()
       })
     }) // end 'exit'
 
     describe('online', function () {
-      it('should call `online` when a worker goes online', function (done) {
+      it('should call `online` when a worker goes online', function () {
         var worker = manager.workers[0]
         var spy = sinon.spy(manager, 'online')
         manager.cluster.emit('online', worker)
-        expect(spy.calledWith(worker)).to.be.true()
+        sinon.assert.calledWith(spy, worker)
         manager.online.restore()
-        done()
       })
 
-      it('should indicate a worker has gone online in the logs', function (done) {
+      it('should indicate a worker has gone online in the logs', function () {
         var worker = manager.workers[0]
         manager.cluster.emit('online', worker)
-        expect(infoSpy.calledWith('Worker online: ' + worker.id)).to.be.true()
-        done()
+        sinon.assert.calledWith(infoSpy, 'Worker online: ' + worker.id)
       })
     }) // end 'online'
 
     describe('disconnect', function () {
-      it('should call `disconnect` when a worker disconnects', function (done) {
+      it('should call `disconnect` when a worker disconnects', function () {
         var worker = manager.workers[0]
         var spy = sinon.spy(manager, 'disconnect')
         manager.cluster.emit('disconnect', worker)
-        expect(spy.calledWith(worker)).to.be.true()
+        sinon.assert.calledWith(spy, worker)
         manager.disconnect.restore()
-        done()
       })
 
-      it('should indicate a worker has disconnected in the logs', function (done) {
+      it('should indicate a worker has disconnected in the logs', function () {
         var worker = manager.workers[0]
         var logLine = 'Worker disconnected: ' + worker.id + ' -- killing'
         manager.cluster.emit('disconnect', worker)
-        expect(infoSpy.calledWith(logLine)).to.be.true()
-        done()
+        sinon.assert.calledWith(infoSpy, logLine)
       })
     }) // end 'disconnect'
   }) // end 'events'
@@ -185,7 +161,7 @@ describe('cluster-man', function () {
     var manager
     var errorObject = new Error('Unhandled Error')
 
-    beforeEach(function (done) {
+    beforeEach(function () {
       manager = new ClusterManager({
         worker: noop,
         master: function () {
@@ -194,51 +170,45 @@ describe('cluster-man', function () {
         numWorkers: 1
       })
       sinon.stub(manager.cluster, 'fork').returns({ id: 'id' })
-      done()
     })
 
-    afterEach(function (done) {
+    afterEach(function () {
       manager.cluster.fork.restore()
-      done()
     })
 
     it('should call `masterError` on an uncaught master process error', function (done) {
       sinon.stub(manager, 'masterError', function (err) {
-        expect(err).to.equal(errorObject)
-        manager.masterError.restore()
+        assert.equal(err, errorObject)
         done()
       })
       manager._startMaster()
     })
 
-    it('should log uncaught errors on the master process', function (done) {
+    it('should log uncaught errors on the master process', function () {
       var spy = sinon.spy(manager.log, 'error')
       sinon.stub(process, 'exit', function () {
-        expect(spy.calledTwice).to.be.true()
+        sinon.assert.calledTwice(spy)
         manager.log.error.restore()
         process.exit.restore()
-        done()
       })
       manager._startMaster()
     })
 
-    it('should exit the master process on uncaught errors', function (done) {
+    it('should exit the master process on uncaught errors', function () {
       sinon.stub(manager, '_exitMaster', function (err) {
-        expect(err).to.equal(errorObject)
-        done()
+        assert.equal(err, errorObject)
       })
       manager._startMaster()
     })
 
-    it('should not exit the master process when `killOnError === false`', function (done) {
+    it('should not exit the master process when `killOnError === false`', function () {
       var manager = new ClusterManager({
         worker: noop,
         killOnError: false
       })
       var stub = sinon.stub(manager, '_exitMaster')
       manager.masterError(new Error('Error'))
-      expect(stub.callCount).to.equal(0)
-      done()
+      sinon.assert.notCalled(stub)
     })
   }) // end 'masterError'
 }) // end 'cluster-man'
