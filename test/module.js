@@ -2,7 +2,7 @@
 
 var assert = require('chai').assert
 
-require('loadenv')('cluster-man')
+require('loadenv')()
 var ClusterManager = require('../index.js')
 
 describe('cluster-man', function () {

@@ -1,6 +1,6 @@
 'use strict'
 
-require('loadenv')('cluster-man')
+require('loadenv')()
 
 var cluster = require('cluster')
 var debug = require('debug')

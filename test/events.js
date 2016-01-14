@@ -4,7 +4,7 @@ var assert = require('chai').assert
 var noop = require('101/noop')
 var sinon = require('sinon')
 
-require('loadenv')('cluster-man')
+require('loadenv')()
 var ClusterManager = require('../index.js')
 
 describe('cluster-man', function () {
