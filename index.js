@@ -102,8 +102,6 @@ function ClusterManager(opts) {
     this.options.beforeExit = noop;
   }
 
-  this.workers = [];
-
   // This is here to expose the cluster without having to re-require in the
   // script that uses cluster-man
   this.cluster = cluster;
@@ -216,7 +214,6 @@ ClusterManager.prototype.createWorker = function () {
     worker.process.kill(1);
   });
 
-  this.workers.push(worker);
   this.log.info('Created new worker: ' + worker.id);
   return worker;
 };
@@ -256,15 +253,9 @@ ClusterManager.prototype.exit = function (worker, code, signal) {
     '-- and signal:', signal
   ].join(' '));
 
-  var self = this;
-  this.workers.map(pluck('id')).some(function (workerId, i) {
-    if (workerId === worker.id) {
-      self.workers.splice(i, 1);
-    }
-  });
-
   // If all the workers have been killed, exit the process
-  if (this.workers.length === 0) {
+  var numWorkers = Object.keys(this.cluster.workers).length;
+  if (numWorkers === 0) {
     this.log.error('Cluster fatal: all worker have died. Master process exiting.');
     this._exitMaster(new Error('All workers have died.'));
   }
